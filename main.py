@@ -1,7 +1,8 @@
 import os
+import argparse
 from dotenv import load_dotenv
 from google import genai
-import argparse
+from google.genai import types
 
 def main():
     print("Hello from achilles-ai!")
@@ -17,10 +18,9 @@ def main():
 
     client = genai.Client(api_key=api_key)
 
-    model = "gemini-2.5-flash"
-    contents= args.user_prompt
-    
-    response = client.models.generate_content(model = model, contents = contents)
+    messages = [types.Content(role="user", parts=[types.Part(text=args.user_prompt)])]
+
+    response = client.models.generate_content(model = "gemini-2.5-flash", contents = messages)
     
     if not response.usage_metadata:
         raise RuntimeError("FAILED API request")

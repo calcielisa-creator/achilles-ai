@@ -8,7 +8,7 @@ def main():
 
     load_dotenv()
     api_key = os.environ.get("GEMINI_API_KEY")
-    if api_key == None:
+    if not api_key:
         raise RuntimeError("Environment variable NOT FOUND")
 
     client = genai.Client(api_key=api_key)
@@ -16,6 +16,13 @@ def main():
     contents= "Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum."
     model = "gemini-2.5-flash"
     response = client.models.generate_content(model = model, contents = contents)
+    if not response.usage_metadata:
+        raise RuntimeError("FAILED API request")
+    
+    print("Prompt tokens: ",response.usage_metadata.prompt_token_count)
+    print("Response tokens: ", response.usage_metadata.candidates_token_count)
+    print("Response:")
     print(response.text)
+
 if __name__ == "__main__":
     main()

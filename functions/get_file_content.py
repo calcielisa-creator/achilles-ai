@@ -8,7 +8,7 @@ def get_file_content(working_directory, file_path):
         valid_target_dir = os.path.commonpath([absolute_path, target_path]) == absolute_path
         if not valid_target_dir:
             return f'Error: Cannot list "{file_path}" as it is outside the permitted working directory'
-        if os.path.isfile(target_path) == False:
+        if not os.path.isfile(target_path):
             return f'Error: File not found or is not a regular file: "{file_path}"'
     
         with open(target_path, "r") as f:

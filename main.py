@@ -1,5 +1,6 @@
 import os
 import argparse
+import sys
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
@@ -22,7 +23,15 @@ def main():
     if args.verbose:
         print(f"User prompt: {args.user_prompt}\n")
     
-    generate_content(client, messages, args.verbose)
+    for _ in range(20):
+        result_flag = generate_content(client, messages, args.verbose)
+        if result_flag:
+            break
+    else:
+        print("Limit of iterations reached.")
+        sys.exit(1)
+
+
 
 def generate_content(client, messages, verbose):
     function_results = []
@@ -31,6 +40,10 @@ def generate_content(client, messages, verbose):
     if not response.usage_metadata:
         raise RuntimeError("FAILED API request")
     
+    if response.candidates:
+        for candidate in response.candidates:
+            messages.append(candidate.content)
+    
     if verbose:
         print("Prompt tokens: ", response.usage_metadata.prompt_token_count)
         print("Response tokens: ", response.usage_metadata.candidates_token_count)
@@ -38,7 +51,7 @@ def generate_content(client, messages, verbose):
     if not response.function_calls:
         print("Response:")
         print(response.text)
-        return
+        return True
 
     for function_call in response.function_calls:
 
@@ -57,6 +70,9 @@ def generate_content(client, messages, verbose):
             print(f"-> {function_call_result.parts[0].function_response.response}")
         
         function_results.append(function_call_result.parts[0])
+
+    messages.append(types.Content(role="user", parts=function_results))
+        
 
 if __name__ == "__main__":
     main()
